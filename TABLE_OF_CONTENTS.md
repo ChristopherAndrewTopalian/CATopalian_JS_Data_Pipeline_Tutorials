@@ -55,3 +55,9 @@
 * [CATopalian_JS_Checkout_Pipeline_with_Helper.html](src/tutorials/008_Checkout_Pipeline/CATopalian_JS_Checkout_Pipeline_with_Helper.html)
 
 ---
+
+### 009_Password_Pipeline
+
+* [CATopalian_JS_Password_Pipeline.html](src/tutorials/009_Password_Pipeline/CATopalian_JS_Password_Pipeline.html)
+
+---
