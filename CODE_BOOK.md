@@ -189,6 +189,11 @@ a:hover { color: rgb(0, 255, 255); }
 <li><a href='src/tutorials/008_Checkout_Pipeline/CATopalian_JS_Checkout_Pipeline_with_Helper.html' target = 'blank'>CATopalian JS Checkout Pipeline With Helper</a></li>
 </ul>
 </details></li>
+<li><details><summary class='folder_title'>009 Password Pipeline</summary>
+<ul>
+<li><a href='src/tutorials/009_Password_Pipeline/CATopalian_JS_Password_Pipeline.html' target = 'blank'>CATopalian JS Password Pipeline</a></li>
+</ul>
+</details></li>
 </ul>
 </body>
 </html>
@@ -3041,6 +3046,396 @@ CONVEYOR BELT DATA FLOW DIAGRAM
   ┌──────────────────────────────────────┐
   │ STATION 4: formatStrengthReport()    │ ──▶ Output: finalReport (String: 'Score: 80/100 — STRONG')
   └──────────────────────────────────────┘
+-->
+
+<!--
+How Data Transforms Across Types on This Belt
+Station 1 (String → Object): Separates character inspection from point math so changing how a symbol is detected never breaks the scoring rules.
+
+Station 2 (Object → Number): Converts the five boolean flags into a clean integer (0–100) that can be compared mathematically.
+
+Station 3 (Number → String): Maps numeric thresholds to clear words (WEAK, FAIR, STRONG, VERY STRONG) without needing to know anything about uppercase letters or symbols.
+
+Station 4 (Number + String → String): Assembles the final display banner cleanly before handing it to the DOM.
+-->
+```
+
+
+</details>
+
+---
+
+<details>
+<summary><b>Section: 010_Instant_Search_Pipeline</b></summary>
+
+
+### `CATopalian_JS_Instant_Search_Pipeline.html`
+
+```html
+<!-- Dedicated to the Creator of All Beings -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Instant_Search_Pipeline.html -->
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title> CATopalian JS Instant Search Pipeline </title>
+
+<meta charset = 'UTF-8'>
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+    margin: 24px;
+    max-width: 680px;
+}
+
+input[type='text']
+{
+    display: block;
+    width: 380px;
+    background-color: rgb(20, 20, 20);
+    color: rgb(255, 255, 255);
+    border: 2px solid rgb(0, 255, 255);
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 8px;
+    margin-top: 6px;
+    margin-bottom: 14px;
+}
+
+hr
+{
+    border: 1px solid rgb(80, 80, 80);
+    margin: 18px 0px;
+}
+
+.stationCard
+{
+    background-color: rgb(20, 20, 20);
+    border-left: 4px solid rgb(0, 255, 255);
+    padding: 10px 14px;
+    margin-bottom: 12px;
+}
+
+.resultItem
+{
+    background-color: rgb(24, 24, 24);
+    border: 1px solid rgb(70, 70, 70);
+    padding: 8px 12px;
+    margin-top: 8px;
+    font-size: 18px;
+}
+
+</style>
+
+<script>
+
+// ===
+// shortcuts.js
+// ===
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichText)
+{
+    let result = console.log(whichText);
+    return result;
+}
+
+function ct(whichText)
+{
+    let result = document.createTextNode(whichText);
+    return result;
+}
+
+//----//
+
+// ===
+// MASTER CATALOG DATA (Never modified directly)
+// ===
+let starshipCatalog = [
+    { name: 'USS Voyager',    role: 'Intrepid Explorer', sector: 'Delta Quadrant' },
+    { name: 'USS Enterprise', role: 'Galaxy Explorer',   sector: 'Alpha Quadrant' },
+    { name: 'IKS HeghTa',     role: 'Bird-of-Prey',      sector: 'Beta Quadrant'  },
+    { name: 'USS Defiant',    role: 'Tactical Escort',   sector: 'Gamma Quadrant' },
+    { name: 'USS Reliant',    role: 'Miranda Cruiser',   sector: 'Alpha Quadrant' },
+    { name: 'USS Excelsior',  role: 'Heavy Cruiser',     sector: 'Beta Quadrant'  }
+];
+
+//----//
+
+// ===
+// LOGIC LAYER (100% Pure Input -> Output — Zero DOM references)
+// ===
+
+// STATION 1: INPUT: raw search text | OUTPUT: trimmed lowercase query string
+function normalizeQuery(whichRawText)
+{
+    let cleanQuery = whichRawText.trim().toLowerCase();
+    return cleanQuery;
+}
+
+// STATION 2: INPUT: catalog array + clean query | OUTPUT: array of matching objects
+function filterCatalogItems(whichItems, whichCleanQuery)
+{
+    // If search box is empty, return a fresh copy of all items
+    if (whichCleanQuery === '')
+    {
+        return whichItems.slice();
+    }
+
+    let matches = [];
+
+    for (let i = 0; i < whichItems.length; i++)
+    {
+        let item = whichItems[i];
+        let nameLower = item.name.toLowerCase();
+        let roleLower = item.role.toLowerCase();
+        let sectorLower = item.sector.toLowerCase();
+
+        if (
+            nameLower.indexOf(whichCleanQuery) !== -1 ||
+            roleLower.indexOf(whichCleanQuery) !== -1 ||
+            sectorLower.indexOf(whichCleanQuery) !== -1
+        )
+        {
+            matches.push(item);
+        }
+    }
+
+    return matches;
+}
+
+// STATION 3: INPUT: filtered array | OUTPUT: new array sorted A -> Z by name
+function sortMatchesAlphabetically(whichMatches)
+{
+    let sorted = whichMatches.slice();
+
+    sorted.sort(function(a, b)
+    {
+        if (a.name < b.name)
+        {
+            return -1;
+        }
+
+        if (a.name > b.name)
+        {
+            return 1;
+        }
+
+        return 0;
+    });
+
+    return sorted;
+}
+
+// STATION 4: INPUT: sorted matches + total catalog size | OUTPUT: summary string
+function formatMatchSummary(whichSortedMatches, whichTotalCount)
+{
+    let foundCount = whichSortedMatches.length;
+
+    if (foundCount === 0)
+    {
+        return 'No matching vessels found (0 of ' + whichTotalCount + ')';
+    }
+
+    return 'Showing ' + foundCount + ' of ' + whichTotalCount + ' vessels (Sorted A-Z)';
+}
+
+//----//
+
+// ===
+// INTERFACE LAYER
+// ===
+function makeInterface()
+{
+    // Page Title
+    let title = ce('div');
+    title.textContent = 'Instant Search & Filter Pipeline';
+    title.style.fontSize = '24px';
+    title.style.marginBottom = '16px';
+    ba(title);
+
+    // Search Label
+    let searchLabel = ce('div');
+    searchLabel.textContent = 'Search by Vessel, Class, or Quadrant:';
+    ba(searchLabel);
+
+    // Search Input Box
+    let searchInput = ce('input');
+    searchInput.id = 'searchInput';
+    searchInput.type = 'text';
+    searchInput.placeholder = 'e.g. explorer, alpha, defiant...';
+    searchInput.oninput = function()
+    {
+        runSearchPipeline();
+    };
+    ba(searchInput);
+
+    // Divider Line
+    let divider = ce('hr');
+    ba(divider);
+
+    // Station 1 Output Box
+    let station1Out = ce('div');
+    station1Out.id = 'station1Out';
+    station1Out.className = 'stationCard';
+    ba(station1Out);
+
+    // Station 2 Output Box
+    let station2Out = ce('div');
+    station2Out.id = 'station2Out';
+    station2Out.className = 'stationCard';
+    ba(station2Out);
+
+    // Station 3 Output Box
+    let station3Out = ce('div');
+    station3Out.id = 'station3Out';
+    station3Out.className = 'stationCard';
+    ba(station3Out);
+
+    // Station 4 Output Box (Final Summary)
+    let station4Out = ce('div');
+    station4Out.id = 'station4Out';
+    station4Out.className = 'stationCard';
+    station4Out.style.borderLeftColor = 'rgb(0, 255, 0)';
+    ba(station4Out);
+
+    // Container for Matching Result Cards
+    let resultsContainer = ce('div');
+    resultsContainer.id = 'resultsContainer';
+    resultsContainer.style.marginTop = '14px';
+    ba(resultsContainer);
+}
+
+function renderResultCards(whichSortedMatches)
+{
+    let container = ge('resultsContainer');
+
+    // Clear previous cards cleanly without innerHTML
+    container.textContent = '';
+
+    for (let i = 0; i < whichSortedMatches.length; i++)
+    {
+        let item = whichSortedMatches[i];
+
+        let card = ce('div');
+        card.className = 'resultItem';
+        card.textContent = (i + 1) + '. ' + item.name + ' — ' + item.role + ' (' + item.sector + ')';
+        container.append(card);
+    }
+}
+
+//----//
+
+// ===
+// ORCHESTRATOR
+// ===
+function runSearchPipeline()
+{
+    // 1. Read raw search text from the interface
+    let rawSearchText = ge('searchInput').value;
+
+    // 2. Run the 4 pure conveyor belt stations
+    let cleanQuery = normalizeQuery(rawSearchText);
+    let matchingItems = filterCatalogItems(starshipCatalog, cleanQuery);
+    let sortedMatches = sortMatchesAlphabetically(matchingItems);
+    let summaryText = formatMatchSummary(sortedMatches, starshipCatalog.length);
+
+    // 3. Build a preview list of names for Station 3
+    let sortedNames = [];
+
+    for (let i = 0; i < sortedMatches.length; i++)
+    {
+        sortedNames.push(sortedMatches[i].name);
+    }
+
+    // 4. Update each vertical station card using clean textContent
+    ge('station1Out').textContent = 'Station 1 (Normalized Query): "' + cleanQuery + '"';
+    ge('station2Out').textContent = 'Station 2 (Filtered Matches): ' + matchingItems.length + ' match(es)';
+    ge('station3Out').textContent = 'Station 3 (Sorted Order): ' + (sortedNames.length > 0 ? sortedNames.join(', ') : 'none');
+    ge('station4Out').textContent = 'Station 4 (Final Summary): ' + summaryText;
+
+    // 5. Render the clean vertical result cards
+    renderResultCards(sortedMatches);
+}
+
+function whenLoaded()
+{
+    makeInterface();
+    runSearchPipeline();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>
+
+<!--
+================================================================================
+CONVEYOR BELT DATA FLOW DIAGRAM
+================================================================================
+
+  [ Raw Search Text: '  ALPHA  ' ]
+            │
+            ▼
+  ┌────────────────────────────────────────┐
+  │ STATION 1: normalizeQuery()            │ ──▶ Output: cleanQuery (String: 'alpha')
+  └────────────────────────────────────────┘
+            │
+            ▼  (+ starshipCatalog Array)
+  ┌────────────────────────────────────────┐
+  │ STATION 2: filterCatalogItems()        │ ──▶ Output: matchingItems (Array: 2 Objects)
+  └────────────────────────────────────────┘
+            │
+            ▼
+  ┌────────────────────────────────────────┐
+  │ STATION 3: sortMatchesAlphabetically() │ ──▶ Output: sortedMatches (Array: Sorted A-Z)
+  └────────────────────────────────────────┘
+            │
+            ▼
+  ┌────────────────────────────────────────┐
+  │ STATION 4: formatMatchSummary()        │ ──▶ Output: summaryText (String: 'Showing 2 of 6...')
+  └────────────────────────────────────────┘
+
+================================================================================
+Dedicated to God the Father
+All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026
+https://github.com/ChristopherTopalian
+https://github.com/ChristopherAndrewTopalian
+https://sites.google.com/view/CollegeOfScripting
+================================================================================
 -->
 ```
 

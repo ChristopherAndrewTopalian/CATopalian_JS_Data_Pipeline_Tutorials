@@ -61,3 +61,9 @@
 * [CATopalian_JS_Password_Pipeline.html](src/tutorials/009_Password_Pipeline/CATopalian_JS_Password_Pipeline.html)
 
 ---
+
+### 010_Instant_Search_Pipeline
+
+* [CATopalian_JS_Instant_Search_Pipeline.html](src/tutorials/010_Instant_Search_Pipeline/CATopalian_JS_Instant_Search_Pipeline.html)
+
+---
