@@ -5,6 +5,12 @@ A collection of zero-dependency, pure vanilla JavaScript and HTML tutorials demo
 
 ---
 
+[TOC](TABLE_OF_CONTENTS.md)
+
+[CODE BOOK](CODE_BOOK.md)
+
+---
+
 ## Core Concept: The Conveyor Belt Pattern
 
 In traditional beginner code, input reading, validation, calculation, and screen updates are often mixed together inside giant `if-else` blocks. When one rule changes, the whole block becomes difficult to read and debug.
