@@ -5,9 +5,11 @@ A collection of zero-dependency, pure vanilla JavaScript and HTML tutorials demo
 
 ---
 
-[TOC](TABLE_OF_CONTENTS.md)
+[TOC](TABLE_OF_CONTENTS.md)  
 
-[CODE BOOK](CODE_BOOK.md)
+[CODE BOOK](CODE_BOOK.md)  
+
+https://christopherandrewtopalian.github.io/CATopalian_JS_Data_Pipeline_Tutorials/index_links.html
 
 ---
 
