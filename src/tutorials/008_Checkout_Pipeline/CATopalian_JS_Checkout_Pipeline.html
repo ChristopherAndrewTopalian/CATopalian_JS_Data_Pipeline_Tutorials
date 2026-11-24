@@ -1,0 +1,387 @@
+<!-- Dedicated to the Creator of All Beings -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Checkout_Pipeline.html -->
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title> CATopalian JS Checkout Pipeline </title>
+
+<meta charset = 'UTF-8'>
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+    margin: 24px;
+    max-width: 580px;
+}
+
+input[type='text'], input[type='number']
+{
+    display: block;
+    width: 240px;
+    background-color: rgb(20, 20, 20);
+    color: rgb(255, 255, 255);
+    border: 2px solid rgb(0, 255, 255);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 8px;
+    margin-top: 4px;
+    margin-bottom: 14px;
+}
+
+input[type='checkbox']
+{
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+hr
+{
+    border: 1px solid rgb(80, 80, 80);
+    margin: 18px 0px;
+}
+
+.itemRow
+{
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.stationCard
+{
+    background-color: rgb(20, 20, 20);
+    border-left: 4px solid rgb(0, 255, 255);
+    padding: 10px 14px;
+    margin-bottom: 12px;
+}
+
+</style>
+
+<script>
+
+// ===
+// shortcuts.js
+// ===
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichText)
+{
+    let result = console.log(whichText);
+    return result;
+}
+
+function ct(whichText)
+{
+    let result = document.createTextNode(whichText);
+    return result;
+}
+
+//----//
+
+// ===
+// CATALOG DATA
+// ===
+let catalogItems = [
+    { name: 'Mechanical Keyboard', price: 80, qty: 1, defaultChecked: true },
+    { name: 'USB-C Hub',           price: 35, qty: 1, defaultChecked: true },
+    { name: 'Braided Cable',       price: 15, qty: 2, defaultChecked: true },
+    { name: 'Desk Mat',            price: 25, qty: 1, defaultChecked: false }
+];
+
+//----//
+
+// ===
+// LOGIC LAYER (100% Pure Input -> Output — Zero DOM references)
+// ===
+
+// STATION 1: INPUT: array of item objects | OUTPUT: raw subtotal number
+function calculateSubtotal(whichItems)
+{
+    if (whichItems.length === 0)
+    {
+        return 0;
+    }
+
+    let total = 0;
+
+    for (let i = 0; i < whichItems.length; i++)
+    {
+        let lineTotal = whichItems[i].price * whichItems[i].qty;
+        total = total + lineTotal;
+    }
+
+    return total;
+}
+
+// STATION 2: INPUT: subtotal + promo string | OUTPUT: discounted number
+function applyPromoDiscount(whichSubtotal, whichPromoCode)
+{
+    if (whichSubtotal <= 0)
+    {
+        return 0;
+    }
+
+    let cleanCode = whichPromoCode.trim().toUpperCase();
+
+    if (cleanCode === 'SAVE10')
+    {
+        return whichSubtotal * 0.90;
+    }
+
+    if (cleanCode === 'SAVE20')
+    {
+        return whichSubtotal * 0.80;
+    }
+
+    return whichSubtotal;
+}
+
+// STATION 3: INPUT: discounted amount + tax % | OUTPUT: total with tax
+function addSalesTax(whichAmount, whichTaxPercent)
+{
+    if (whichAmount <= 0)
+    {
+        return 0;
+    }
+
+    if (whichTaxPercent <= 0)
+    {
+        return whichAmount;
+    }
+
+    let taxAmount = whichAmount * (whichTaxPercent / 100);
+    return whichAmount + taxAmount;
+}
+
+// STATION 4: INPUT: raw final number | OUTPUT: formatted "$0.00" string
+function formatCurrency(whichAmount)
+{
+    if (whichAmount <= 0)
+    {
+        return '$0.00';
+    }
+
+    return '$' + whichAmount.toFixed(2);
+}
+
+//----//
+
+// ===
+// INTERFACE LAYER (Explicit Line-by-Line Element Creation)
+// ===
+function getSelectedItems(whichCatalog)
+{
+    let selected = [];
+
+    for (let i = 0; i < whichCatalog.length; i++)
+    {
+        let box = ge('itemCheck_' + i);
+
+        if (box && box.checked)
+        {
+            selected.push(whichCatalog[i]);
+        }
+    }
+
+    return selected;
+}
+
+function makeInterface()
+{
+    // Page Title
+    let title = ce('div');
+    title.textContent = 'Shopping Cart Checkout Pipeline';
+    title.style.fontSize = '24px';
+    title.style.marginBottom = '16px';
+    ba(title);
+
+    // Checklist Header
+    let sectionTitle = ce('div');
+    sectionTitle.textContent = 'Select Cart Items:';
+    sectionTitle.style.marginBottom = '10px';
+    ba(sectionTitle);
+
+    // Checklist Rows
+    for (let i = 0; i < catalogItems.length; i++)
+    {
+        let item = catalogItems[i];
+
+        let row = ce('div');
+        row.className = 'itemRow';
+
+        let checkbox = ce('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'itemCheck_' + i;
+        checkbox.checked = item.defaultChecked;
+        checkbox.onchange = function()
+        {
+            runCheckoutPipeline();
+        };
+        row.append(checkbox);
+
+        let label = ce('span');
+        label.textContent = item.name + ' ($' + item.price + ' x ' + item.qty + ')';
+        row.append(label);
+
+        ba(row);
+    }
+
+    // Promo Code Input
+    let promoLabel = ce('div');
+    promoLabel.textContent = 'Promo Code (try SAVE10 or SAVE20):';
+    promoLabel.style.marginTop = '12px';
+    ba(promoLabel);
+
+    let promoInput = ce('input');
+    promoInput.id = 'promoInput';
+    promoInput.type = 'text';
+    promoInput.value = 'SAVE10';
+    promoInput.oninput = function()
+    {
+        runCheckoutPipeline();
+    };
+    ba(promoInput);
+
+    // Sales Tax Input
+    let taxLabel = ce('div');
+    taxLabel.textContent = 'Sales Tax (%):';
+    taxLabel.style.marginTop = '12px';
+    ba(taxLabel);
+
+    let taxInput = ce('input');
+    taxInput.id = 'taxInput';
+    taxInput.type = 'number';
+    taxInput.value = '8';
+    taxInput.oninput = function()
+    {
+        runCheckoutPipeline();
+    };
+    ba(taxInput);
+
+    // Divider Line
+    let divider = ce('hr');
+    ba(divider);
+
+    // Station 1 Output Box
+    let station1Out = ce('div');
+    station1Out.id = 'station1Out';
+    station1Out.className = 'stationCard';
+    ba(station1Out);
+
+    // Station 2 Output Box
+    let station2Out = ce('div');
+    station2Out.id = 'station2Out';
+    station2Out.className = 'stationCard';
+    ba(station2Out);
+
+    // Station 3 Output Box
+    let station3Out = ce('div');
+    station3Out.id = 'station3Out';
+    station3Out.className = 'stationCard';
+    ba(station3Out);
+
+    // Station 4 Output Box (Final Result)
+    let station4Out = ce('div');
+    station4Out.id = 'station4Out';
+    station4Out.className = 'stationCard';
+    station4Out.style.borderLeftColor = 'rgb(0, 255, 0)';
+    ba(station4Out);
+}
+
+//----//
+
+// ===
+// ORCHESTRATOR
+// ===
+function runCheckoutPipeline()
+{
+    // 1. Gather raw inputs from the interface
+    let selectedItems = getSelectedItems(catalogItems);
+    let promoCode = ge('promoInput').value;
+    let taxPercent = Number(ge('taxInput').value);
+
+    // 2. Run the 4 pure conveyor belt stations
+    let subtotal = calculateSubtotal(selectedItems);
+    let afterDiscount = applyPromoDiscount(subtotal, promoCode);
+    let afterTax = addSalesTax(afterDiscount, taxPercent);
+    let finalPrice = formatCurrency(afterTax);
+
+    // 3. Display each station's output cleanly
+    ge('station1Out').textContent = 'Station 1 (Subtotal): $' + subtotal.toFixed(2);
+    ge('station2Out').textContent = 'Station 2 (After Promo): $' + afterDiscount.toFixed(2);
+    ge('station3Out').textContent = 'Station 3 (After Tax): $' + afterTax.toFixed(2);
+    ge('station4Out').textContent = 'Station 4 (Final Total): ' + finalPrice;
+}
+
+function whenLoaded()
+{
+    makeInterface();
+    runCheckoutPipeline();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>
+
+<!--
+CONVEYOR BELT DATA FLOW DIAGRAM
+
+  [ Checked Cart Items ]
+            │
+            ▼
+  ┌──────────────────────────────────┐
+  │ STATION 1: calculateSubtotal()   │ ──▶ Output: subtotal (Number: 145)
+  └──────────────────────────────────┘
+            │
+            ▼  (+ Promo Code: 'SAVE10')
+  ┌──────────────────────────────────┐
+  │ STATION 2: applyPromoDiscount()  │ ──▶ Output: afterDiscount (Number: 130.5)
+  └──────────────────────────────────┘
+            │
+            ▼  (+ Tax Rate: 8%)
+  ┌──────────────────────────────────┐
+  │ STATION 3: addSalesTax()         │ ──▶ Output: afterTax (Number: 140.94)
+  └──────────────────────────────────┘
+            │
+            ▼
+  ┌──────────────────────────────────┐
+  │ STATION 4: formatCurrency()      │ ──▶ Output: finalPrice (String: '$140.94')
+  └──────────────────────────────────┘
+
+-->

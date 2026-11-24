@@ -47,3 +47,11 @@
 * [CATopalian_JS_Trip_Algorithm_Pipeline.html](src/tutorials/007_Trip_Algorithm_Pipeline/CATopalian_JS_Trip_Algorithm_Pipeline.html)
 
 ---
+
+### 008_Checkout_Pipeline
+
+* [CATopalian_JS_Checkout_Pipeline.html](src/tutorials/008_Checkout_Pipeline/CATopalian_JS_Checkout_Pipeline.html)
+
+* [CATopalian_JS_Checkout_Pipeline_with_Helper.html](src/tutorials/008_Checkout_Pipeline/CATopalian_JS_Checkout_Pipeline_with_Helper.html)
+
+---
