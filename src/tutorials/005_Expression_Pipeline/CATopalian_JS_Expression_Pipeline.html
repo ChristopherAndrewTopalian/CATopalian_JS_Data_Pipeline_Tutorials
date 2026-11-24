@@ -1,0 +1,337 @@
+<!-- Dedicated to the Creator of All Beings -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Expression_Pipeline.html -->
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title> CATopalian JS Expression Pipeline </title>
+
+<meta charset = 'UTF-8'>
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+    margin: 24px;
+}
+
+input
+{
+    width: 420px;
+    background-color: rgb(20, 20, 20);
+    color: rgb(255, 255, 255);
+    border: 2px solid rgb(0, 255, 255);
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 10px;
+}
+
+.stageBox
+{
+    background-color: rgb(22, 22, 22);
+    border-left: 4px solid rgb(0, 255, 255);
+    padding: 12px 16px;
+    margin-top: 14px;
+    max-width: 640px;
+}
+
+.stageLabel
+{
+    color: rgb(0, 255, 255);
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+</style>
+
+<script>
+
+// ===
+// shortcuts.js
+// ===
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichText)
+{
+    let result = console.log(whichText);
+    return result;
+}
+
+function ct(whichText)
+{
+    let result = document.createTextNode(whichText);
+    return result;
+}
+
+//----//
+
+// ===
+// INTERFACE
+// ===
+function makeInterface()
+{
+    let title = ce('div');
+    title.textContent = 'Conveyor Belt Math Evaluator (+, -, *, /)';
+    title.style.marginBottom = '12px';
+    ba(title);
+
+    let expressionInput = ce('input');
+    expressionInput.id = 'expressionInput';
+    expressionInput.type = 'text';
+    expressionInput.value = '10 + 5 * 2 - 4 / 2';
+    expressionInput.oninput = function()
+    {
+        runPipeline();
+    };
+    ba(expressionInput);
+
+    let outputArea = ce('div');
+    outputArea.id = 'outputArea';
+    ba(outputArea);
+}
+
+//----//
+
+// ===
+// HELPER FUNCTION
+// ===
+function getOperatorPriority(whichOperator)
+{
+    if (whichOperator === '*' || whichOperator === '/')
+    {
+        return 2;
+    }
+
+    if (whichOperator === '+' || whichOperator === '-')
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+//----//
+
+// ===
+// MODULAR PIPELINE FUNCTIONS (Input -> Output)
+// ===
+
+// STAGE 1: INPUT: element id | OUTPUT: raw trimmed string
+function readExpression(whichId)
+{
+    let element = ge(whichId);
+
+    if (!element)
+    {
+        return '';
+    }
+
+    return element.value.trim();
+}
+
+// STAGE 2: INPUT: raw string | OUTPUT: array of number and operator tokens
+function tokenizeExpression(whichText)
+{
+    if (whichText === '')
+    {
+        return [];
+    }
+
+    // Separate numbers and operators even if the user typed "10+5*2" without spaces
+    let spaced = whichText.replace(/([+\-*/])/g, ' $1 ');
+    let parts = spaced.trim().split(/\s+/);
+    let tokens = [];
+
+    for (let i = 0; i < parts.length; i++)
+    {
+        let item = parts[i];
+
+        if (item === '+' || item === '-' || item === '*' || item === '/')
+        {
+            tokens.push(item);
+        }
+        else if (!isNaN(Number(item)) && item !== '')
+        {
+            tokens.push(Number(item));
+        }
+    }
+
+    return tokens;
+}
+
+// STAGE 3: INPUT: infix tokens | OUTPUT: postfix queue (ordered by math precedence)
+function orderByPrecedence(whichTokens)
+{
+    let outputQueue = [];
+    let operatorStack = [];
+
+    for (let i = 0; i < whichTokens.length; i++)
+    {
+        let token = whichTokens[i];
+
+        if (typeof token === 'number')
+        {
+            outputQueue.push(token);
+        }
+        else
+        {
+            while (
+                operatorStack.length > 0 &&
+                getOperatorPriority(operatorStack[operatorStack.length - 1]) >= getOperatorPriority(token)
+            )
+            {
+                outputQueue.push(operatorStack.pop());
+            }
+
+            operatorStack.push(token);
+        }
+    }
+
+    while (operatorStack.length > 0)
+    {
+        outputQueue.push(operatorStack.pop());
+    }
+
+    return outputQueue;
+}
+
+// STAGE 4: INPUT: postfix queue | OUTPUT: single calculated number
+function evaluateQueue(whichQueue)
+{
+    if (whichQueue.length === 0)
+    {
+        return 0;
+    }
+
+    let numberStack = [];
+
+    for (let i = 0; i < whichQueue.length; i++)
+    {
+        let item = whichQueue[i];
+
+        if (typeof item === 'number')
+        {
+            numberStack.push(item);
+        }
+        else
+        {
+            if (numberStack.length < 2)
+            {
+                return 'Waiting for second number...';
+            }
+
+            let rightNumber = numberStack.pop();
+            let leftNumber = numberStack.pop();
+
+            if (item === '+')
+            {
+                numberStack.push(leftNumber + rightNumber);
+            }
+            else if (item === '-')
+            {
+                numberStack.push(leftNumber - rightNumber);
+            }
+            else if (item === '*')
+            {
+                numberStack.push(leftNumber * rightNumber);
+            }
+            else if (item === '/')
+            {
+                if (rightNumber === 0)
+                {
+                    return 'Cannot divide by zero';
+                }
+
+                numberStack.push(leftNumber / rightNumber);
+            }
+        }
+    }
+
+    if (numberStack.length === 1)
+    {
+        return numberStack[0];
+    }
+
+    return 'Incomplete expression';
+}
+
+//----//
+
+// ===
+// DISPLAY & ORCHESTRATION
+// ===
+function renderStages(rawText, tokens, orderedQueue, finalAnswer)
+{
+    let area = ge('outputArea');
+
+    area.innerHTML =
+        '<div class="stageBox">' +
+            '<div class="stageLabel">STAGE 1: Raw Input</div>' +
+            '<div>' + (rawText || '(empty)') + '</div>' +
+        '</div>' +
+        '<div class="stageBox">' +
+            '<div class="stageLabel">STAGE 2: Tokenized Array</div>' +
+            '<div>[ ' + tokens.join(' , ') + ' ]</div>' +
+        '</div>' +
+        '<div class="stageBox">' +
+            '<div class="stageLabel">STAGE 3: Precedence Queue (Postfix / RPN)</div>' +
+            '<div>[ ' + orderedQueue.join(' , ') + ' ]</div>' +
+        '</div>' +
+        '<div class="stageBox" style="border-left-color: rgb(0, 255, 0);">' +
+            '<div class="stageLabel" style="color: rgb(0, 255, 0);">STAGE 4: Final Output</div>' +
+            '<div style="font-size: 26px;">' + finalAnswer + '</div>' +
+        '</div>';
+}
+
+function runPipeline()
+{
+    // The entire program reads like a 4-step assembly line:
+    let rawText = readExpression('expressionInput');
+    let tokens = tokenizeExpression(rawText);
+    let orderedQueue = orderByPrecedence(tokens);
+    let finalAnswer = evaluateQueue(orderedQueue);
+
+    renderStages(rawText, tokens, orderedQueue, finalAnswer);
+}
+
+function whenLoaded()
+{
+    makeInterface();
+    runPipeline();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>

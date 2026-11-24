@@ -1,0 +1,228 @@
+<!-- Dedicated to the Creator of All Beings -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Conveyor_Belt.html -->
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title> CATopalian JS Conveyor Belt 02 </title>
+
+<meta charset = 'UTF-8'>
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+    margin: 24px;
+}
+
+input
+{
+    width: 220px;
+    background-color: rgb(20, 20, 20);
+    color: rgb(255, 255, 255);
+    border: 2px solid rgb(0, 255, 255);
+    font-family: Arial;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 8px;
+    margin-bottom: 16px;
+}
+
+.station
+{
+    background-color: rgb(20, 20, 20);
+    border-left: 5px solid rgb(0, 255, 255);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    max-width: 560px;
+}
+
+.arrow
+{
+    color: rgb(255, 255, 0);
+    margin: 4px 0px 10px 20px;
+    font-size: 18px;
+}
+
+.label
+{
+    color: rgb(0, 255, 255);
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+</style>
+
+<script>
+
+// ===
+// shortcuts.js
+// ===
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichText)
+{
+    let result = console.log(whichText);
+    return result;
+}
+
+function ct(whichText)
+{
+    let result = document.createTextNode(whichText);
+    return result;
+}
+
+//----//
+
+// ===
+// INTERFACE
+// ===
+function makeInterface()
+{
+    let title = ce('div');
+    title.textContent = 'Enter Starting Reactor Power:';
+    title.style.marginBottom = '8px';
+    ba(title);
+
+    let powerInput = ce('input');
+    powerInput.id = 'powerInput';
+    powerInput.type = 'number';
+    powerInput.value = '25';
+    powerInput.oninput = function()
+    {
+        runVisualPipeline();
+    };
+    ba(powerInput);
+
+    let beltContainer = ce('div');
+    beltContainer.id = 'beltContainer';
+    ba(beltContainer);
+}
+
+//----//
+
+// ===
+// CONVEYOR BELT STATIONS (Exact same pure functions from Tutorial 1!)
+// ===
+
+// INPUT: element id | OUTPUT: clean number
+function readStartingPower(whichId)
+{
+    let element = ge(whichId);
+
+    if (!element || element.value === '')
+    {
+        return 0;
+    }
+
+    let result = Number(element.value);
+    return result;
+}
+
+// STATION 1: INPUT: number | OUTPUT: number + 10
+function addReactorBonus(whichPower)
+{
+    let result = whichPower + 10;
+    return result;
+}
+
+// STATION 2: INPUT: number | OUTPUT: number * 2
+function doubleShieldOutput(whichPower)
+{
+    let result = whichPower * 2;
+    return result;
+}
+
+// STATION 3: INPUT: number | OUTPUT: formatted text string
+function formatPowerReadout(whichPower)
+{
+    let result = 'Final Shield Output: ' + whichPower + ' MW';
+    return result;
+}
+
+//----//
+
+// ===
+// VISUAL RENDERER
+// ===
+function renderBelt(startVal, step1Val, step2Val, step3Val)
+{
+    let container = ge('beltContainer');
+
+    container.innerHTML =
+        '<div class="station">' +
+            '<div class="label">INPUT STATION: readStartingPower()</div>' +
+            '<div>Output: ' + startVal + '</div>' +
+        '</div>' +
+        '<div class="arrow">↓ feeds ' + startVal + ' into addReactorBonus()</div>' +
+        '<div class="station">' +
+            '<div class="label">STATION 1: addReactorBonus(whichPower) -> + 10</div>' +
+            '<div>Output: ' + step1Val + '</div>' +
+        '</div>' +
+        '<div class="arrow">↓ feeds ' + step1Val + ' into doubleShieldOutput()</div>' +
+        '<div class="station">' +
+            '<div class="label">STATION 2: doubleShieldOutput(whichPower) -> * 2</div>' +
+            '<div>Output: ' + step2Val + '</div>' +
+        '</div>' +
+        '<div class="arrow">↓ feeds ' + step2Val + ' into formatPowerReadout()</div>' +
+        '<div class="station" style="border-left-color: rgb(0, 255, 0);">' +
+            '<div class="label" style="color: rgb(0, 255, 0);">FINAL STATION: formatPowerReadout(whichPower)</div>' +
+            '<div style="font-size: 24px;">' + step3Val + '</div>' +
+        '</div>';
+}
+
+//----//
+
+// ===
+// ORCHESTRATOR
+// ===
+function runVisualPipeline()
+{
+    let startVal = readStartingPower('powerInput');
+    let step1Val = addReactorBonus(startVal);
+    let step2Val = doubleShieldOutput(step1Val);
+    let step3Val = formatPowerReadout(step2Val);
+
+    renderBelt(startVal, step1Val, step2Val, step3Val);
+}
+
+function whenLoaded()
+{
+    makeInterface();
+    runVisualPipeline();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>

@@ -1,0 +1,332 @@
+<!-- Dedicated to the Creator of All Beings -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Data_Pipeline.html -->
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title> CATopalian JS Data Pipeline </title>
+
+<meta charset = 'UTF-8'>
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    font-family: Arial;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+    margin: 24px;
+}
+
+button
+{
+    background-color: rgb(45, 45, 45);
+    color: rgb(255, 255, 255);
+    border: 2px solid rgb(0, 255, 255);
+    font-family: Arial;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 14px;
+    margin-right: 10px;
+    margin-bottom: 14px;
+    cursor: pointer;
+}
+
+button:hover
+{
+    background-color: rgb(0, 120, 255);
+}
+
+.stageBox
+{
+    background-color: rgb(20, 20, 20);
+    border-left: 4px solid rgb(0, 255, 255);
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    max-width: 780px;
+}
+
+.stageTitle
+{
+    color: rgb(0, 255, 255);
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.recordRow
+{
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+</style>
+
+<script>
+
+// ===
+// shortcuts.js
+// ===
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichText)
+{
+    let result = console.log(whichText);
+    return result;
+}
+
+function ct(whichText)
+{
+    let result = document.createTextNode(whichText);
+    return result;
+}
+
+//----//
+
+// ===
+// RAW INPUT DATA (Messy spacing, mixed casing, offline/corrupt entries)
+// ===
+let rawTelemetry = [
+    { vessel: '  uss enterprise ', sector: 'alpha', shields: 88, status: 'ACTIVE' },
+    { vessel: 'uss defiant',      sector: 'gamma', shields: 42, status: 'active' },
+    { vessel: '  IKS HeghTa  ',   sector: 'beta',  shields: 65, status: 'Active' },
+    { vessel: 'uss voyager',      sector: 'delta', shields: 31, status: 'ACTIVE' },
+    { vessel: '',                 sector: 'alpha', shields: 95, status: 'ACTIVE' },
+    { vessel: 'uss excelsior',    sector: 'alpha', shields: -1, status: 'OFFLINE' },
+    { vessel: 'ussreliant',       sector: 'beta',  shields: 54, status: 'active' }
+];
+
+let currentThreshold = 75;
+
+//----//
+
+// ===
+// INTERFACE
+// ===
+function makeInterface()
+{
+    let header = ce('div');
+    header.textContent = 'Conveyor Belt Data Pipeline (Clean -> Filter -> Sort -> Summarize)';
+    header.style.fontSize = '22px';
+    header.style.marginBottom = '14px';
+    ba(header);
+
+    let controls = ce('div');
+    ba(controls);
+
+    let thresholds = [50, 75, 100];
+
+    for (let i = 0; i < thresholds.length; i++)
+    {
+        let level = thresholds[i];
+        let btn = ce('button');
+        btn.textContent = 'Filter Shields < ' + level + '%';
+        btn.onclick = function()
+        {
+            currentThreshold = level;
+            runDataPipeline();
+        };
+        controls.append(btn);
+    }
+
+    let pipelineDisplay = ce('div');
+    pipelineDisplay.id = 'pipelineDisplay';
+    ba(pipelineDisplay);
+}
+
+//----//
+
+// ===
+// MODULAR PIPELINE FUNCTIONS (Pure Input -> Output)
+// ===
+
+// STAGE 1: INPUT: raw array | OUTPUT: array with valid, formatted records only
+function cleanRecords(whichRecords)
+{
+    let cleaned = [];
+
+    for (let i = 0; i < whichRecords.length; i++)
+    {
+        let item = whichRecords[i];
+        let cleanName = item.vessel.trim().toUpperCase();
+        let cleanStatus = item.status.trim().toUpperCase();
+
+        // Skip corrupt records with missing names, negative shields, or offline status
+        if (cleanName === '' || item.shields < 0 || cleanStatus !== 'ACTIVE')
+        {
+            continue;
+        }
+
+        cleaned.push({
+            vessel: cleanName,
+            sector: item.sector.trim().toUpperCase(),
+            shields: item.shields,
+            status: cleanStatus
+        });
+    }
+
+    return cleaned;
+}
+
+// STAGE 2: INPUT: clean array + threshold | OUTPUT: only vessels below shield threshold
+function filterLowShields(whichRecords, maxShields)
+{
+    let filtered = [];
+
+    for (let i = 0; i < whichRecords.length; i++)
+    {
+        if (whichRecords[i].shields < maxShields)
+        {
+            filtered.push(whichRecords[i]);
+        }
+    }
+
+    return filtered;
+}
+
+// STAGE 3: INPUT: filtered array | OUTPUT: new array sorted from lowest shields to highest
+function sortByUrgency(whichRecords)
+{
+    // Copy first so we never mutate the previous stage's array
+    let sorted = whichRecords.slice();
+
+    sorted.sort(function(a, b)
+    {
+        return a.shields - b.shields;
+    });
+
+    return sorted;
+}
+
+// STAGE 4: INPUT: sorted array | OUTPUT: single summary object
+function summarizeAlerts(whichRecords)
+{
+    if (whichRecords.length === 0)
+    {
+        return {
+            alertCount: 0,
+            averageShields: 0,
+            highestPriorityVessel: 'NONE'
+        };
+    }
+
+    let totalShields = 0;
+
+    for (let i = 0; i < whichRecords.length; i++)
+    {
+        totalShields += whichRecords[i].shields;
+    }
+
+    let average = Math.round(totalShields / whichRecords.length);
+
+    return {
+        alertCount: whichRecords.length,
+        averageShields: average,
+        highestPriorityVessel: whichRecords[0].vessel + ' (' + whichRecords[0].shields + '%)'
+    };
+}
+
+//----//
+
+// ===
+// DISPLAY & ORCHESTRATION
+// ===
+function formatRecordList(whichRecords)
+{
+    if (whichRecords.length === 0)
+    {
+        return '<div class="recordRow">(No matching records)</div>';
+    }
+
+    let html = '';
+
+    for (let i = 0; i < whichRecords.length; i++)
+    {
+        let r = whichRecords[i];
+        html += '<div class="recordRow">' +
+            (i + 1) + '. ' + r.vessel +
+            ' | Sector: ' + r.sector +
+            ' | Shields: ' + r.shields + '%' +
+            ' | Status: ' + r.status +
+            '</div>';
+    }
+
+    return html;
+}
+
+function renderPipeline(raw, cleaned, filtered, sorted, summary)
+{
+    let display = ge('pipelineDisplay');
+
+    display.innerHTML =
+        '<div class="stageBox">' +
+            '<div class="stageTitle">STAGE 0: Raw Input (' + raw.length + ' raw entries)</div>' +
+            formatRecordList(raw) +
+        '</div>' +
+        '<div class="stageBox">' +
+            '<div class="stageTitle">STAGE 1: Cleaned & Validated (' + cleaned.length + ' valid active vessels)</div>' +
+            formatRecordList(cleaned) +
+        '</div>' +
+        '<div class="stageBox">' +
+            '<div class="stageTitle">STAGE 2: Filtered Alerts (Shields &lt; ' + currentThreshold + '%)</div>' +
+            formatRecordList(filtered) +
+        '</div>' +
+        '<div class="stageBox">' +
+            '<div class="stageTitle">STAGE 3: Sorted by Priority (Lowest Shields First)</div>' +
+            formatRecordList(sorted) +
+        '</div>' +
+        '<div class="stageBox" style="border-left-color: rgb(0, 255, 0);">' +
+            '<div class="stageTitle" style="color: rgb(0, 255, 0);">STAGE 4: Final Summary Report</div>' +
+            '<div class="recordRow">Vessels Needing Attention: ' + summary.alertCount + '</div>' +
+            '<div class="recordRow">Average Alert Shield Level: ' + summary.averageShields + '%</div>' +
+            '<div class="recordRow">Top Priority Vessel: ' + summary.highestPriorityVessel + '</div>' +
+        '</div>';
+}
+
+function runDataPipeline()
+{
+    // Every stage takes the previous output and returns a brand-new result:
+    let cleaned = cleanRecords(rawTelemetry);
+    let filtered = filterLowShields(cleaned, currentThreshold);
+    let sorted = sortByUrgency(filtered);
+    let summary = summarizeAlerts(sorted);
+
+    renderPipeline(rawTelemetry, cleaned, filtered, sorted, summary);
+}
+
+function whenLoaded()
+{
+    makeInterface();
+    runDataPipeline();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>

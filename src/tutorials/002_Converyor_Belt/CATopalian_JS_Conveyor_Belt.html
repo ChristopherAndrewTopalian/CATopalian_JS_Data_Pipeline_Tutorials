@@ -1,0 +1,130 @@
+<!-- Dedicated to the Creator of All Beings -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Conveyor_Belt.html -->
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title> conveyor belt </title>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+input, textarea
+{
+    display: block;
+    margin-bottom: 12px;
+    background-color: rgb(20, 20, 20);
+    color: white;
+    border: 2px solid rgb(0, 255, 255);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 8px;
+    width: 320px;
+}
+
+</style>
+
+<script>
+
+// shortcuts.js
+
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichMessage)
+{
+    let result = console.log(whichMessage);
+    return result;
+}
+
+// 1. Clean the data (INPUT: raw string -> OUTPUT: trimmed lowercase string)
+function cleanTheInputData(whichData)
+{
+    let result = whichData.trim().toLowerCase();
+
+    return result;
+}
+
+// 2. Say something about their choice (INPUT: clean string -> OUTPUT: response string)
+function citeTheirChoice(whichChoice)
+{
+    if (whichChoice === '')
+    {
+        return '';
+    }
+
+    if (whichChoice === 'aqua')
+    {
+        return 'I like aqua too';
+    }
+
+    return 'You chose: ' + whichChoice;
+}
+
+// 3. Conveyor belt (connects Station 1 -> Station 2 -> Output box)
+function processData(whichData)
+{
+    let cleaned = cleanTheInputData(whichData);
+
+    let choice = citeTheirChoice(cleaned);
+
+    ge('output').value = choice;
+}
+
+function makeInterface()
+{
+    let theInput = ce('input');
+    theInput.oninput = function()
+    {
+        processData(theInput.value);
+    };
+    ba(theInput);
+
+    //-//
+
+    let output = ce('textarea');
+    output.id = 'output';
+    ba(output);
+}
+
+function whenLoaded()
+{
+    makeInterface();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>
