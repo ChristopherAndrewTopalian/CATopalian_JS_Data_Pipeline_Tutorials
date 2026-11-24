@@ -1,0 +1,254 @@
+<!-- Dedicated to the Creator of All Beings -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Trip_Algorithm_Pipeline.html -->
+
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<title> CATopalian JS Trip Algorithm Pipeline </title>
+
+<meta charset = 'UTF-8'>
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+    margin: 24px;
+    max-width: 540px;
+}
+
+input
+{
+    display: block;
+    width: 220px;
+    background-color: rgb(20, 20, 20);
+    color: rgb(255, 255, 255);
+    border: 2px solid rgb(0, 255, 255);
+    font-family: Arial;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 8px;
+    margin-top: 4px;
+    margin-bottom: 14px;
+}
+
+hr
+{
+    border: 1px solid rgb(80, 80, 80);
+    margin: 18px 0px;
+}
+
+.stationCard
+{
+    background-color: rgb(20, 20, 20);
+    border-left: 4px solid rgb(0, 255, 255);
+    padding: 10px 14px;
+    margin-bottom: 12px;
+}
+
+</style>
+
+<script>
+
+// ===
+// shortcuts.js
+// ===
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichText)
+{
+    let result = console.log(whichText);
+    return result;
+}
+
+function ct(whichText)
+{
+    let result = document.createTextNode(whichText);
+    return result;
+}
+
+//----//
+
+// ===
+// LOGIC LAYER (Pure Input -> Output Algorithm Stations)
+// ===
+
+// STATION 1: INPUT: distance + speed | OUTPUT: decimal hours (e.g., 2.5)
+function calculateDecimalHours(whichDistance, whichSpeed)
+{
+    if (whichSpeed <= 0 || whichDistance <= 0)
+    {
+        return 0;
+    }
+
+    let hours = whichDistance / whichSpeed;
+    return hours;
+}
+
+// STATION 2: INPUT: decimal hours | OUTPUT: readable "X hrs Y mins" text
+function formatHoursAndMinutes(whichDecimalHours)
+{
+    if (whichDecimalHours <= 0)
+    {
+        return '0 hrs 0 mins';
+    }
+
+    let wholeHours = Math.floor(whichDecimalHours);
+    let remainingMinutes = Math.round((whichDecimalHours - wholeHours) * 60);
+
+    if (remainingMinutes === 60)
+    {
+        wholeHours = wholeHours + 1;
+        remainingMinutes = 0;
+    }
+
+    return wholeHours + ' hrs ' + remainingMinutes + ' mins';
+}
+
+// STATION 3: INPUT: distance + mpg | OUTPUT: gallons needed
+function calculateGallonsNeeded(whichDistance, whichMpg)
+{
+    if (whichMpg <= 0 || whichDistance <= 0)
+    {
+        return 0;
+    }
+
+    let gallons = whichDistance / whichMpg;
+    return gallons;
+}
+
+// STATION 4: INPUT: gallons + price per gallon | OUTPUT: formatted "$0.00" string
+function calculateFuelCost(whichGallons, whichPricePerGallon)
+{
+    if (whichGallons <= 0 || whichPricePerGallon <= 0)
+    {
+        return '$0.00';
+    }
+
+    let totalCost = whichGallons * whichPricePerGallon;
+    return '$' + totalCost.toFixed(2);
+}
+
+//----//
+
+// ===
+// INTERFACE LAYER (Simple Vertical DOM Elements — Zero innerHTML)
+// ===
+function makeInputRow(whichLabelText, whichId, whichDefaultValue)
+{
+    let label = ce('div');
+    label.textContent = whichLabelText;
+    ba(label);
+
+    let box = ce('input');
+    box.id = whichId;
+    box.type = 'number';
+    box.value = whichDefaultValue;
+    box.oninput = function()
+    {
+        runTripPipeline();
+    };
+    ba(box);
+}
+
+function makeStationCard(whichId, isFinal)
+{
+    let card = ce('div');
+    card.id = whichId;
+    card.className = 'stationCard';
+
+    if (isFinal)
+    {
+        card.style.borderLeftColor = 'rgb(0, 255, 0)';
+    }
+
+    ba(card);
+}
+
+function makeInterface()
+{
+    let title = ce('div');
+    title.textContent = 'Trip Time & Fuel Algorithm Pipeline';
+    title.style.fontSize = '24px';
+    title.style.marginBottom = '16px';
+    ba(title);
+
+    makeInputRow('Distance (Miles):', 'distanceInput', '150');
+    makeInputRow('Average Speed (MPH):', 'speedInput', '60');
+    makeInputRow('Vehicle Efficiency (MPG):', 'mpgInput', '30');
+    makeInputRow('Fuel Price ($ per Gallon):', 'priceInput', '3.25');
+
+    let divider = ce('hr');
+    ba(divider);
+
+    makeStationCard('station1Out', false);
+    makeStationCard('station2Out', false);
+    makeStationCard('station3Out', false);
+    makeStationCard('station4Out', true);
+}
+
+//----//
+
+// ===
+// ORCHESTRATOR
+// ===
+function runTripPipeline()
+{
+    // Read raw numbers from inputs
+    let distance = Number(ge('distanceInput').value);
+    let speed = Number(ge('speedInput').value);
+    let mpg = Number(ge('mpgInput').value);
+    let price = Number(ge('priceInput').value);
+
+    // Run the conveyor belt stations
+    let decimalHours = calculateDecimalHours(distance, speed);
+    let readableTime = formatHoursAndMinutes(decimalHours);
+    let gallonsNeeded = calculateGallonsNeeded(distance, mpg);
+    let totalFuelCost = calculateFuelCost(gallonsNeeded, price);
+
+    // Update each vertical station card using clean textContent
+    ge('station1Out').textContent = 'Station 1 (Decimal Hours): ' + decimalHours.toFixed(2) + ' hrs';
+    ge('station2Out').textContent = 'Station 2 (Travel Time): ' + readableTime;
+    ge('station3Out').textContent = 'Station 3 (Fuel Required): ' + gallonsNeeded.toFixed(2) + ' gallons';
+    ge('station4Out').textContent = 'Station 4 (Total Fuel Cost): ' + totalFuelCost;
+}
+
+function whenLoaded()
+{
+    makeInterface();
+    runTripPipeline();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>

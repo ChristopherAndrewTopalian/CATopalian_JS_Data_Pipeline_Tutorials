@@ -41,3 +41,9 @@
 * [CATopalian_JS_Data_Pipeline.html](src/tutorials/006_Data_Pipeline/CATopalian_JS_Data_Pipeline.html)
 
 ---
+
+### 007_Trip_Algorithm_Pipeline
+
+* [CATopalian_JS_Trip_Algorithm_Pipeline.html](src/tutorials/007_Trip_Algorithm_Pipeline/CATopalian_JS_Trip_Algorithm_Pipeline.html)
+
+---
